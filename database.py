@@ -9,6 +9,7 @@ class DatabaseLogic:
         # Idk how to properly indent this.
         # But also I'm not using enough docstrings.
         #self.connection.execute('''DROP TABLE codes''')
+        #self.connection.execute('''DROP TABLE hours''')
         self.connection.execute('''CREATE TABLE IF NOT EXISTS codes
             (displayname TEXT,
             sapcode TEXT,
@@ -18,8 +19,9 @@ class DatabaseLogic:
         self.connection.execute('''CREATE TABLE IF NOT EXISTS hours
             (date INTEGER,
             code INTEGER REFERENCES codes(internalid),
-            amount INTEGER,
-            comment TEXT)''')
+            amount REAL,
+            comment TEXT,
+            entryid INTEGER PRIMARY KEY)''')
         self.connection.commit()
 
     def _formatCodes(self, fetchall):
@@ -81,6 +83,29 @@ class DatabaseLogic:
         cur = self.connection.cursor()
         cur.execute('''UPDATE codes SET displayname = ?, sapcode = ?, sapname = ?, displayed = ?
                        WHERE internalid = ?''', (displayname, sapcode, sapname, displayed_int, internalid))
+        self.connection.commit()
+
+    def addHours(self, date, code, amount, comment=""):
+        """Add an hours entry to the database."""
+        date_str = date.isoformat()
+        cur = self.connection.cursor()
+        cur.execute('''INSERT INTO hours (date, code, amount, comment) VALUES
+                       ( DATE( ? ), ?, ?, ?)''', (date_str, int(code), float(amount), comment))
+        self.connection.commit()
+
+    def getAllHours(self):
+        """Return all hour entries."""
+        # TODO Limit this because it might slow down the app when a lot of entries exist.
+        cur = self.connection.cursor()
+        cur.execute('''SELECT date, code, amount, comment, entryid
+                    FROM hours ORDER BY date DESC''')
+        items = cur.fetchall()
+        return items
+
+    def deleteHours(self, entryid):
+        """Delete an entry from Hours"""
+        cur = self.connection.cursor()
+        cur.execute('''DELETE FROM hours WHERE entryid = ?''', (str(entryid)))
         self.connection.commit()
 
 if __name__ == "__main__":
