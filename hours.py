@@ -6,12 +6,19 @@ from datetime import date
 
 class HoursApplication(npyscreen.NPSAppManaged):
     """Application which controls."""
+
+    configuration = {
+            'database_path': None}
+
+    def configure(self, database_path):
+        """Configure the application."""
+        self.configuration['database_path'] = database_path
+
     def onStart(self):
-        # TODO: Make the path configurable. Not everyone is called Tom.
-        self.db = DatabaseLogic("/home/tom/urenlog.sqlite")
+        self.db = DatabaseLogic(self.configuration['database_path'])
         self.addForm('MAIN', MainHoursForm, name="Current hour entries")
 
-class MainHoursForm(npyscreen.Form):
+class MainHoursForm(npyscreen.FormBaseNew):
     """Shows a grid with all entries."""
     idList = []
 
@@ -26,7 +33,8 @@ class MainHoursForm(npyscreen.Form):
                                   columns=5,
                                   select_whole_line=True,
                                   col_titles=["Date", "Code", "Amount", "Comment", "ID"])
-        self.hoursgrid.add_handlers({curses.ascii.NL: self.selectRow})
+        self.hoursgrid.add_handlers({curses.ascii.NL: self.selectRow, curses.ascii.DEL: self.selectRow, curses.ascii.ESC: self.exitForm})
+        self.exitbutton = self.add(ExitButton, name="Exit", relx=-12, rely=-3)
 
     def beforeEditing(self):
         self.newdate.value = date.today()
@@ -52,8 +60,6 @@ class MainHoursForm(npyscreen.Form):
         self.idList = idList
         return displayList
 
-    def afterEditing(self):
-        print(self.newamount.value)
 
     def selectRow(self, input):
         selectedRow = self.hoursgrid.selected_row()
@@ -66,6 +72,9 @@ class MainHoursForm(npyscreen.Form):
         if result:
             self.parentApp.db.deleteHours(selectedRow[4])
             self.parentApp.switchForm('MAIN')
+
+    def exitForm(self, input):
+        self.parentApp.switchForm(None)
 
 class SubmitButton(npyscreen.ButtonPress):
     def whenPressed(self):
@@ -103,5 +112,7 @@ class SubmitButton(npyscreen.ButtonPress):
         self.parent.editw = 2
         self.parent.editing = False
 
-if __name__ == "__main__":
-    UrenApp = HoursApplication().run()
+class ExitButton(npyscreen.ButtonPress):
+    def whenPressed(self):
+        self.parent.parentApp.switchForm(None)
+

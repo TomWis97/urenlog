@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+import configparser
+import argparse
+import sys
+import os
+import argcomplete # For bash completion
+import database
+import hours
+import edit_codes
+import hours_cli
+
+#def main_oud():
+#    parser = argparse.ArgumentParser(description="Log hours for work.")
+#    parser.add_argument(
+#        "action",
+#        choices=["hours", "codes", "add-hours"],
+#        help="What should I do?")
+#    options = parser.parse_args()
+#    print(options)
+
+def loadConfig():
+    basepath = os.path.dirname(os.path.realpath(__file__))
+    configpath = os.path.join(basepath, 'config.ini')
+    raw_config = configparser.ConfigParser()
+    raw_config.read(configpath)
+    config = {
+        'database': {'path': os.path.expanduser(raw_config['database']['path'])}}
+    return config
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="cmd", help="sub-command help")
+    subparsers.required = True
+
+    parser_hours = subparsers.add_parser("hours", help="Help for editing hours.")
+    
+    parser_codes = subparsers.add_parser("codes", help="Help for editing codes")
+
+    parser_add_hours = subparsers.add_parser("add-hours", help="Help for adding hours today.")
+    parser_add_hours.add_argument("code", help="(Part of) displayname to use.")
+    parser_add_hours.add_argument("amount", help="Amount of hours.", type=float)
+    parser_add_hours.add_argument("-c", "--comment", help="Comment", default="")
+
+    argcomplete.autocomplete(parser)
+    data = parser.parse_args()
+
+    config = loadConfig()
+    if data.cmd == "hours":
+        UrenApp = hours.HoursApplication()
+        UrenApp.configure(config['database']['path'])
+        UrenApp.run()
+    elif data.cmd == "codes":
+        CodeApp = edit_codes.CodeApplication()
+        CodeApp.configure(config['database']['path'])
+        CodeApp.run()
+    elif data.cmd == "add-hours":
+        HoursCLI = hours_cli.HoursCLI(config['database']['path'])
+        try:
+            #print("Code: {}, Amount: {}, Comment: {}".format(data.code, data.amount, data.comment))
+            entryCode = HoursCLI.codeFuzzySearch(data.code)
+            if not entryCode:
+                print("No code has been found with {} in displayname.".format(data.code))
+                sys.exit(1)
+        except ValueError:
+            print("Multiple codes have been found for this query.")
+            sys.exit(1)
+        entryCodeId = entryCode[4]
+        HoursCLI.addHoursToday(entryCodeId, data.amount, data.comment)
+        print("Hours written today:", HoursCLI.getHoursToday())
+
+
+if __name__ == "__main__":
+    main()
+

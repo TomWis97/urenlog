@@ -6,13 +6,19 @@ class CodeApplication(npyscreen.NPSAppManaged):
     """This is the main application. Loads other forms."""
     formEditPrefill = {'displayname': '', 'sapname': '', 'sapcode': '', 'displayed': False, 'internalid': None}
 
+    configuration = {
+        'database_path': None}
+
+    def configure(self, database_path):
+        """Configure the application."""
+        self.configuration['database_path'] = database_path
+
     def onStart(self):
         self.addForm('MAIN', ShowCodesForm, name="Current codes")
         self.addForm('NEW', EnterCodeForm, name="New code entry")
         self.addForm('EDIT', EditCodeForm, name="Edit code entry")
         # Connect to database
-        # TODO: Make path configurable. Not everyone is called Tom.
-        self.db = DatabaseLogic("/home/tom/urenlog.sqlite")
+        self.db = DatabaseLogic(self.configuration['database_path'])
 
 class EnterCodeForm(npyscreen.Form):
     """This is the form for creating and editing codes."""
@@ -98,5 +104,3 @@ class ExitButton(npyscreen.ButtonPress):
     def WhenPressed(self):
         self.parent.parentApp.setNextForm(None)
 
-if __name__ == "__main__":
-    TestApp = CodeApplication().run()

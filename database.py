@@ -105,8 +105,23 @@ class DatabaseLogic:
     def deleteHours(self, entryid):
         """Delete an entry from Hours"""
         cur = self.connection.cursor()
-        cur.execute('''DELETE FROM hours WHERE entryid = ?''', (str(entryid)))
+        cur.execute('''DELETE FROM hours WHERE entryid = ?''', (str(entryid),))
         self.connection.commit()
+
+    def getHoursByDate(self, date):
+        """Get hours per category on date."""
+        cur = self.connection.cursor()
+        cur.execute('''SELECT codes.displayname, SUM(hours.amount) AS total
+                       FROM codes, hours WHERE codes.internalid = hours.code AND
+                       hours.date = DATE( ? ) GROUP BY hours.code''', (date.isoformat(),))
+        return cur.fetchall()
+
+    def getTotalHoursByDate(self, date):
+        """Return amount of hours on date."""
+        cur = self.connection.cursor()
+        cur.execute('''SELECT SUM(amount) AS total FROM hours WHERE date = DATE( ? )''',
+                    (date.isoformat(),))
+        return cur.fetchone()
 
 if __name__ == "__main__":
     print("Please do not run this on it's own.")
