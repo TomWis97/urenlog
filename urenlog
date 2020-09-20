@@ -4,10 +4,12 @@ import argparse
 import sys
 import os
 import argcomplete # For bash completion
+import datetime
 import database
 import hours
 import edit_codes
 import hours_cli
+import overview
 
 #def main_oud():
 #    parser = argparse.ArgumentParser(description="Log hours for work.")
@@ -42,6 +44,12 @@ def main():
     parser_add_hours.add_argument("amount", help="Amount of hours.", type=float)
     parser_add_hours.add_argument("-c", "--comment", help="Comment", default="")
 
+    parser_overview = subparsers.add_parser("overview", help="Show an overview.")
+    parser_overview.add_argument("month", nargs='?', help="Month as number to show.", type=int, default=datetime.date.today().month)
+    parser_overview.add_argument("year", nargs='?', help="Year as number to show.", type=int, default=datetime.date.today().year)
+
+    parser_hourstoday = subparsers.add_parser("hours-today", help="Show hours written today")
+
     argcomplete.autocomplete(parser)
     data = parser.parse_args()
 
@@ -68,7 +76,21 @@ def main():
         entryCodeId = entryCode[4]
         HoursCLI.addHoursToday(entryCodeId, data.amount, data.comment)
         print("Hours written today:", HoursCLI.getHoursToday())
-
+    elif data.cmd == "overview":
+        overview.test(config['database']['path'], data.year, data.month)
+        OverviewApp = overview.OverviewApplication()
+        OverviewApp.configure(config['database']['path'])
+        try:
+            OverviewApp.changeMonth(data.year, data.month)
+        except ValueError as err:
+            print("Error:", err)
+            exit(1)
+            return # A bit redundant...
+        OverviewApp.run()
+    elif data.cmd == "hours-today":
+        HoursCLI = hours_cli.HoursCLI(config['database']['path'])
+        data = HoursCLI.getCategoriesToday()
+        print(HoursCLI.renderTable(["Code", "Hours"], data, colsep=" ", total=HoursCLI.getHoursToday()), end="")
 
 if __name__ == "__main__":
     main()

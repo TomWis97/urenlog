@@ -37,8 +37,8 @@ class MainHoursForm(npyscreen.FormBaseNew):
         self.exitbutton = self.add(ExitButton, name="Exit", relx=-12, rely=-3)
 
     def beforeEditing(self):
-        self.newdate.value = date.today()
-        #self.newdate.value = ""
+        if self.newdate.value == "":
+            self.newdate.value = date.today()
         self.newcode.value = ""
         self.newamount.value = ""
         self.newcode.values = self.buildCodesList()
@@ -59,7 +59,6 @@ class MainHoursForm(npyscreen.FormBaseNew):
             idList.append(code[4])
         self.idList = idList
         return displayList
-
 
     def selectRow(self, input):
         selectedRow = self.hoursgrid.selected_row()

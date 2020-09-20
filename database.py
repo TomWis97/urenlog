@@ -97,8 +97,8 @@ class DatabaseLogic:
         """Return all hour entries."""
         # TODO Limit this because it might slow down the app when a lot of entries exist.
         cur = self.connection.cursor()
-        cur.execute('''SELECT date, code, amount, comment, entryid
-                    FROM hours ORDER BY date DESC''')
+        cur.execute('''SELECT hours.date, codes.displayname, hours.amount, hours.comment, hours.entryid
+                    FROM hours, codes WHERE hours.code = codes.internalid ORDER BY date DESC''')
         items = cur.fetchall()
         return items
 
@@ -121,7 +121,11 @@ class DatabaseLogic:
         cur = self.connection.cursor()
         cur.execute('''SELECT SUM(amount) AS total FROM hours WHERE date = DATE( ? )''',
                     (date.isoformat(),))
-        return cur.fetchone()
+        result =  cur.fetchone()
+        if result == None:
+            return 0
+        else:
+            return result
 
 if __name__ == "__main__":
     print("Please do not run this on it's own.")
