@@ -62,7 +62,7 @@ class DatabaseLogic:
                     ORDER BY displayname''')
         return self._formatCodes(cur.fetchall())
 
-    def addCode(self, displayname, sapcode, sapname, displayed):
+    def addCode(self, displayname, sapname, sapcode, displayed):
         """Add a code to the database. Parameters: (displayname (string),
         sapcode (string), sapname (string), displayed (boolean)."""
         if displayed:
@@ -74,7 +74,7 @@ class DatabaseLogic:
                        (?, ?, ?, ?)''', (displayname, sapcode, sapname, displayed_int))
         self.connection.commit()
 
-    def editCode(self, displayname, sapcode, sapname, displayed, internalid):
+    def editCode(self, displayname, sapname, sapcode, displayed, internalid):
         """Edit a code in the database."""
         if displayed:
             displayed_int = 1
@@ -114,6 +114,14 @@ class DatabaseLogic:
         cur.execute('''SELECT codes.displayname, SUM(hours.amount) AS total
                        FROM codes, hours WHERE codes.internalid = hours.code AND
                        hours.date = DATE( ? ) GROUP BY hours.code''', (date.isoformat(),))
+        return cur.fetchall()
+
+    def getHoursAndSapCodesByDate(self, date):
+        """Get hours and code information on date."""
+        cur = self.connection.cursor()
+        cur.execute('''SELECT SUM(hours.amount) AS total , codes.sapname, codes.sapcode
+                       FROM codes, hours WHERE codes.internalid = hours.code AND
+                       hours.date = DATE( ? ) GROUP BY codes.sapcode''', (date.isoformat(),))
         return cur.fetchall()
 
     def getTotalHoursByDate(self, date):

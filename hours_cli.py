@@ -26,12 +26,12 @@ class HoursCLI:
 
     def getHoursToday(self):
         """Return hours written for today."""
-        hours = self.db.getTotalHoursByDate(date.today() - timedelta(days=1))
+        hours = self.db.getTotalHoursByDate(date.today())
         return hours[0]
 
     def getCategoriesToday(self):
         """Return hours per category for today."""
-        hourscat = self.db.getHoursByDate(date.today() - timedelta(days=1))
+        hourscat = self.db.getHoursByDate(date.today())
         return hourscat
 
     def renderTable(self, columns, data, colsep=" ", total=None):

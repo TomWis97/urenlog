@@ -26,7 +26,10 @@ def loadConfig():
     raw_config = configparser.ConfigParser()
     raw_config.read(configpath)
     config = {
-        'database': {'path': os.path.expanduser(raw_config['database']['path'])}}
+        'database': {'path': os.path.expanduser(raw_config['database']['path'])},
+        'overview': {'labels': raw_config['overview']['labels'],
+                     'labels_width': raw_config['overview']['labels_width']}}
+
     return config
 
 
@@ -77,9 +80,8 @@ def main():
         HoursCLI.addHoursToday(entryCodeId, data.amount, data.comment)
         print("Hours written today:", HoursCLI.getHoursToday())
     elif data.cmd == "overview":
-        overview.test(config['database']['path'], data.year, data.month)
         OverviewApp = overview.OverviewApplication()
-        OverviewApp.configure(config['database']['path'])
+        OverviewApp.configure(config)
         try:
             OverviewApp.changeMonth(data.year, data.month)
         except ValueError as err:
