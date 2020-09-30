@@ -5,11 +5,15 @@ import sys
 import os
 import argcomplete # For bash completion
 import datetime
+import requests
+
 import database
 import hours
 import edit_codes
 import hours_cli
 import overview
+
+CURRENT_VERSION = "v0.1"
 
 #def main_oud():
 #    parser = argparse.ArgumentParser(description="Log hours for work.")
@@ -32,6 +36,18 @@ def loadConfig():
 
     return config
 
+def check_update():
+    """Return true if an update is available."""
+    try:
+        r = requests.get("https://api.github.com/repos/influenzanet/user-management-service/releases/latest")
+        data = r.json()
+        if data['tag_name'] != CURRENT_VERSION:
+            return True
+        else:
+            return False
+    except:
+        print("oops")
+        return False
 
 def main():
     parser = argparse.ArgumentParser()
@@ -57,6 +73,10 @@ def main():
     data = parser.parse_args()
 
     config = loadConfig()
+
+    if check_update():
+        # A new version is available.
+        print("A new version is available. You're running {}.".format(CURRENT_VERSION))
     if data.cmd == "hours":
         UrenApp = hours.HoursApplication()
         UrenApp.configure(config['database']['path'])
