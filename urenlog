@@ -39,7 +39,7 @@ def loadConfig():
 def check_update():
     """Return true if an update is available."""
     try:
-        r = requests.get("https://api.github.com/repos/influenzanet/user-management-service/releases/latest")
+        r = requests.get("https://api.github.com/repos/TomWis97/urenlog/releases/latest")
         data = r.json()
         if data['tag_name'] != CURRENT_VERSION:
             return True
