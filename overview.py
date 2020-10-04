@@ -77,7 +77,9 @@ class OverviewForm(npyscreen.FormBaseNew):
             self.data,
             self.month_codes,
             self.parentApp.configuration['labels_amount'],
-            self.parentApp.logic.getHoursForMonth())
+            self.parentApp.logic.getHoursForMonth(),
+            self.parentApp.logic.selectedYear,
+            self.parentApp.logic.selectedMonth)
 
         not_enough_labels = False
         current_label = 0
@@ -206,7 +208,7 @@ class OverviewLogic:
 
         return codes_list
 
-    def buildOverviewList(self, data, codes, max_length, total):
+    def buildOverviewList(self, data, codes, max_length, total, year, month):
         """Convert from list per day to list per code.
         Expects paramters from loadData() and getCodesForMonth()"""
         overview_data = []
@@ -217,19 +219,27 @@ class OverviewLogic:
             current_code = []
             for day_number in sorted(data.keys()):
                 day = data[day_number]
+                weekend_days = [4, 5, 6] # TODO Make configurable.
                 day_code_combo = ""
+                if datetime.date(year, month, day_number).weekday() in weekend_days:
+                    day_code_combo = "W"
                 for day_entry in day:
                     if day_entry[1] == code[0]:
-                        day_code_combo = day_entry[0]
-                if day_code_combo == "":
-                    day_code_combo = "-"
+                        #day_code_combo = day_code_combo + day_entry[-1]
+                        day_code_combo = day_entry[-1]
+                        print("day_code_combo", day_code_combo)
+                if day_code_combo == "" or day_code_combo == "W":
+                    day_code_combo += "-"
                 current_code.append(day_code_combo)
             overview_data.append(current_code)
         while len(overview_data) < max_length:
             # Full up empty labels
             filler_row = []
-            for day in data.keys():
-                filler_row.append('-')
+            for day_number in data.keys():
+                if datetime.date(year, month, day_number).weekday() in weekend_days:
+                    filler_row.append('W-')
+                else:
+                    filler_row.append('-')
             overview_data.append(filler_row)
         total_row = []
         for day_number in sorted(data.keys()):
