@@ -27,7 +27,7 @@ class HoursCLI:
     def getHoursToday(self):
         """Return hours written for today."""
         hours = self.db.getTotalHoursByDate(date.today())
-        return hours[0]
+        return hours
 
     def getCategoriesToday(self):
         """Return hours per category for today."""

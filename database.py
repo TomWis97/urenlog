@@ -130,10 +130,10 @@ class DatabaseLogic:
         cur.execute('''SELECT SUM(amount) AS total FROM hours WHERE date = DATE( ? )''',
                     (date.isoformat(),))
         result =  cur.fetchone()
-        if result == None:
+        if result[0] == None:
             return 0
         else:
-            return result
+            return result[0]
 
 if __name__ == "__main__":
     print("Please do not run this on it's own.")

@@ -56,6 +56,11 @@ class OverviewForm(npyscreen.FormBaseNew):
                 width=self.parentApp.configuration['labels_width'],
                 rely=4+x,
                 relx=1))
+        self.total = self.add(npyscreen.FixedText,
+                              value="Total".rjust(self.parentApp.configuration['labels_width']+2),
+                              width=self.parentApp.configuration['labels_width']+3,
+                              rely=4+self.parentApp.configuration['labels_amount'],
+                              relx=1)
 
     def beforeEditing(self):
         # Reset grid
@@ -71,7 +76,8 @@ class OverviewForm(npyscreen.FormBaseNew):
         self.grid.values = self.parentApp.logic.buildOverviewList(
             self.data,
             self.month_codes,
-            self.parentApp.configuration['labels_amount'])
+            self.parentApp.configuration['labels_amount'],
+            self.parentApp.logic.getHoursForMonth())
 
         not_enough_labels = False
         current_label = 0
@@ -175,6 +181,12 @@ class OverviewLogic:
             allData[date.day] = self.db.getHoursAndSapCodesByDate(date)
         return allData
 
+    def getHoursForMonth(self):
+        month_hours = {}
+        for date in self._loadMonthData():
+            month_hours[date.day] = self.db.getTotalHoursByDate(date)
+        return month_hours
+
     def getCodesForMonth(self):
         """List all codes for month."""
         """Return a list (entry for each code) of
@@ -194,7 +206,7 @@ class OverviewLogic:
 
         return codes_list
 
-    def buildOverviewList(self, data, codes, max_length):
+    def buildOverviewList(self, data, codes, max_length, total):
         """Convert from list per day to list per code.
         Expects paramters from loadData() and getCodesForMonth()"""
         overview_data = []
@@ -213,12 +225,16 @@ class OverviewLogic:
                     day_code_combo = "-"
                 current_code.append(day_code_combo)
             overview_data.append(current_code)
-        if len(overview_data) == 0:
-            # No data. Display dashes.
+        while len(overview_data) < max_length:
+            # Full up empty labels
             filler_row = []
             for day in data.keys():
                 filler_row.append('-')
             overview_data.append(filler_row)
+        total_row = []
+        for day_number in sorted(data.keys()):
+            total_row.append(total[day_number])
+        overview_data.append(total_row)
         return overview_data
 
 def test(db_path, year, month):
