@@ -49,6 +49,11 @@ def check_update():
         print("oops")
         return False
 
+def print_update():
+    if check_update():
+        # A new version is available.
+        print("A new version is available. You're running {}.".format(CURRENT_VERSION))
+
 def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="cmd", help="sub-command help")
@@ -74,17 +79,16 @@ def main():
 
     config = loadConfig()
 
-    if check_update():
-        # A new version is available.
-        print("A new version is available. You're running {}.".format(CURRENT_VERSION))
     if data.cmd == "hours":
         UrenApp = hours.HoursApplication()
         UrenApp.configure(config['database']['path'])
         UrenApp.run()
+        print_update()
     elif data.cmd == "codes":
         CodeApp = edit_codes.CodeApplication()
         CodeApp.configure(config['database']['path'])
         CodeApp.run()
+        print_update()
     elif data.cmd == "add-hours":
         HoursCLI = hours_cli.HoursCLI(config['database']['path'])
         try:
@@ -109,6 +113,7 @@ def main():
             exit(1)
             return # A bit redundant...
         OverviewApp.run()
+        print_update()
     elif data.cmd == "hours-today":
         HoursCLI = hours_cli.HoursCLI(config['database']['path'])
         data = HoursCLI.getCategoriesToday()
