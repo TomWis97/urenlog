@@ -81,11 +81,12 @@ class DatabaseLogic:
     def getAllCodesAndTotals(self):
         """Return a 2D array with all codes with totals."""
         cur = self.connection.cursor()
-        cur.execute('''SELECT codes.displayname, codes.sapcode, codes.sapname, codes.displayed, SUM(hours.amount), codes.internalid FROM codes, hours
+        cur.execute('''SELECT codes.displayname, codes.sapcode, codes.sapname, codes.displayed, SUM(hours.amount), codes.internalid
+                    FROM codes, hours
                     WHERE codes.internalid = hours.code
                     GROUP BY codes.internalid
                     ORDER BY codes.displayed DESC''')
-        return self._formatCodes(cur.fetchall())
+        return self._formatCodesAndTotals(cur.fetchall())
 
     def getCodes(self):
         """Return a 2D array with only displayed codes."""
@@ -106,6 +107,7 @@ class DatabaseLogic:
         cur.execute('''INSERT INTO codes (displayname, sapcode, sapname, displayed) VALUES
                        (?, ?, ?, ?)''', (displayname, sapcode, sapname, displayed_int))
         self.connection.commit()
+        return cur.lastrowid
 
     def editCode(self, displayname, sapname, sapcode, displayed, internalid):
         """Edit a code in the database."""
@@ -131,7 +133,8 @@ class DatabaseLogic:
         # TODO Limit this because it might slow down the app when a lot of entries exist.
         cur = self.connection.cursor()
         cur.execute('''SELECT hours.date, codes.displayname, hours.amount, hours.comment, hours.entryid
-                    FROM hours, codes WHERE hours.code = codes.internalid ORDER BY date DESC''')
+                    FROM hours, codes WHERE hours.code = codes.internalid 
+                    AND hours.date > DATE('1970-01-01') ORDER BY date DESC''')
         items = cur.fetchall()
         return items
 

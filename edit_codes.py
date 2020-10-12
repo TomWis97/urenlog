@@ -1,3 +1,4 @@
+import datetime
 import npyscreen
 import curses
 from database import DatabaseLogic
@@ -36,11 +37,15 @@ class EnterCodeForm(npyscreen.Form):
         self.displayed.value = True
 
     def afterEditing(self):
-        self.parentApp.db.addCode(
+        newid = self.parentApp.db.addCode(
             self.displayname.value,
             self.sapname.value,
             self.sapcode.value,
             self.displayed.value)
+        self.parentApp.db.addHours(
+            datetime.datetime.fromtimestamp(0),
+            newid,
+            0)
         self.parentApp.setNextForm("MAIN")
 
 class EditCodeForm(EnterCodeForm):
@@ -85,7 +90,7 @@ class ShowCodesForm(npyscreen.Form):
 
     def selectRow(self, input):
         selectedRow = self.grid.selected_row()
-        if selectedRow[4] == None:
+        if selectedRow[5] == None:
             # The first entry for creating a new code has been selected
             self.nextForm = 'NEW'
             self.parentApp.switchForm('NEW')
@@ -95,7 +100,7 @@ class ShowCodesForm(npyscreen.Form):
                 'sapcode': selectedRow[1],
                 'sapname': selectedRow[2],
                 'displayed': selectedRow[3],
-                'internalid': selectedRow[4]}
+                'internalid': selectedRow[5]}
             self.nextForm = 'EDIT'
             self.parentApp.switchForm("EDIT")
 
