@@ -30,6 +30,7 @@ def loadConfig():
     raw_config = configparser.ConfigParser()
     raw_config.read(configpath)
     config = {
+        'general': {'check_update': raw_config['general'].getboolean('check_update')},
         'database': {'path': os.path.expanduser(raw_config['database']['path'])},
         'overview': {'labels': raw_config['overview']['labels'],
                      'labels_width': raw_config['overview']['labels_width']}}
@@ -83,12 +84,14 @@ def main():
         UrenApp = hours.HoursApplication()
         UrenApp.configure(config['database']['path'])
         UrenApp.run()
-        print_update()
+        if config['general']['check_update']:
+            print_update()
     elif data.cmd == "codes":
         CodeApp = edit_codes.CodeApplication()
         CodeApp.configure(config['database']['path'])
         CodeApp.run()
-        print_update()
+        if config['general']['check_update']:
+            print_update()
     elif data.cmd == "add-hours":
         HoursCLI = hours_cli.HoursCLI(config['database']['path'])
         try:
@@ -113,7 +116,8 @@ def main():
             exit(1)
             return # A bit redundant...
         OverviewApp.run()
-        print_update()
+        if config['general']['check_update']:
+          print_update()
     elif data.cmd == "hours-today":
         HoursCLI = hours_cli.HoursCLI(config['database']['path'])
         data = HoursCLI.getCategoriesToday()
