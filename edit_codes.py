@@ -68,15 +68,15 @@ class ShowCodesForm(npyscreen.Form):
 
     def create(self):
         self.grid = self.add(npyscreen.GridColTitles,
-                             columns=5,
+                             columns=6,
                              select_whole_line=True,
-                             col_titles=["Display Name", "SAP Code", "SAP Name", "Displayed", "Internal ID"])
+                             col_titles=["Display Name", "SAP Code", "SAP Name", "Displayed", "Total hours", "Internal ID"])
         self.grid.add_handlers({curses.ascii.NL: self.selectRow})
         #self.exitButton = self.add(ExitButton, name="Exit")
 
     def beforeEditing(self):
-        newentry = [["Add New Entry", "---", "---", "---", None]]
-        data = self.parentApp.db.getAllCodes()
+        newentry = [["Add New Entry", "---", "---", "---", "---", None]]
+        data = self.parentApp.db.getAllCodesAndTotals()
         self.grid.values = newentry + data
 
     def afterEditing(self):

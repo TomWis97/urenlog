@@ -47,11 +47,44 @@ class DatabaseLogic:
             formattedList.append(currentItem)
         return formattedList
 
+    def _formatCodesAndTotals(self, fetchall):
+        """Formats data from fetchall()."""
+        if len(fetchall) == 0:
+            return []
+        formattedList = []
+        for item in fetchall:
+            currentItem = []
+            # Put everything from tuple in a new list.
+            # Processing where required.
+            currentItem.append(item[0]) #displayname
+            currentItem.append(item[1]) #sapcode
+            currentItem.append(item[2]) #sapname
+            # Processing displayed. SQlite does not really know booleans
+            if item[3] == 0:
+                currentItem.append(False) #displayed
+            elif item[3] == 1:
+                currentItem.append(True) #displayed
+            else:
+                ValueError("This is not a boolean and should never happen")
+            currentItem.append(item[4]) #Total for code
+            currentItem.append(item[5]) #internalid
+            formattedList.append(currentItem)
+        return formattedList
+
     def getAllCodes(self):
         """Return a 2D array with all codes."""
         cur = self.connection.cursor()
         cur.execute('''SELECT * FROM codes
-                    ORDER BY displayed DESC''')
+                    ORDER BY codes.displayed DESC''')
+        return self._formatCodes(cur.fetchall())
+
+    def getAllCodesAndTotals(self):
+        """Return a 2D array with all codes with totals."""
+        cur = self.connection.cursor()
+        cur.execute('''SELECT codes.displayname, codes.sapcode, codes.sapname, codes.displayed, SUM(hours.amount), codes.internalid FROM codes, hours
+                    WHERE codes.internalid = hours.code
+                    GROUP BY codes.internalid
+                    ORDER BY codes.displayed DESC''')
         return self._formatCodes(cur.fetchall())
 
     def getCodes(self):
