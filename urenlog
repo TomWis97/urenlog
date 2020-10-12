@@ -60,18 +60,18 @@ def main():
     subparsers = parser.add_subparsers(dest="cmd", help="sub-command help")
     subparsers.required = True
 
-    parser_hours = subparsers.add_parser("hours", help="Help for editing hours.")
+    parser_hours = subparsers.add_parser("hours", help="TUI interface for hour registration.")
     
-    parser_codes = subparsers.add_parser("codes", help="Help for editing codes")
+    parser_codes = subparsers.add_parser("codes", help="TUI interface for editing codes")
 
-    parser_add_hours = subparsers.add_parser("add-hours", help="Help for adding hours today.")
+    parser_overview = subparsers.add_parser("overview", help="TUI for an overview for the month.")
+    parser_overview.add_argument("month", nargs='?', help="Month as number to show.", type=int, default=datetime.date.today().month)
+    parser_overview.add_argument("year", nargs='?', help="Year as number to show.", type=int, default=datetime.date.today().year)
+
+    parser_add_hours = subparsers.add_parser("add-hours", help="Add hours for today.")
     parser_add_hours.add_argument("code", help="(Part of) displayname to use.")
     parser_add_hours.add_argument("amount", help="Amount of hours.", type=float)
     parser_add_hours.add_argument("-c", "--comment", help="Comment", default="")
-
-    parser_overview = subparsers.add_parser("overview", help="Show an overview.")
-    parser_overview.add_argument("month", nargs='?', help="Month as number to show.", type=int, default=datetime.date.today().month)
-    parser_overview.add_argument("year", nargs='?', help="Year as number to show.", type=int, default=datetime.date.today().year)
 
     parser_hourstoday = subparsers.add_parser("hours-today", help="Show hours written today")
 
