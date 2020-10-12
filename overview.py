@@ -44,7 +44,7 @@ class OverviewForm(npyscreen.FormBaseNew):
                                   width=3,
                                   relx=24,
                                   rely=1)
-        self.grid = self.add(npyscreen.GridColTitles,
+        self.grid = self.add(OverviewGrid,
                              relx=self.parentApp.configuration['labels_width']+6,
                              columns=31,
                              select_whole_line=True)
@@ -107,7 +107,7 @@ class MonthNextButton(npyscreen.ButtonPress):
         self.parent.parentApp.switchForm('MAIN')
 
 class ExitButton(npyscreen.ButtonPress):
-   def whenPressed(self):
+    def whenPressed(self):
         self.parent.parentApp.switchForm(None)
         print(self.parent.parentApp.logic.currentMonth())
 
@@ -122,6 +122,13 @@ class CodeLabel(npyscreen.ButtonPress):
         if self.more_info == None:
             return
         npyscreen.notify_confirm(self.more_info, title=self.name)
+
+class OverviewGrid(npyscreen.GridColTitles):
+    def custom_print_cell(self, actual_cell, cell_display_value):
+        if cell_display_value.startswith('W'):
+            actual_cell.color = 'GOOD'
+            actual_cell.value = cell_display_value[1:]
+
 
 class OverviewLogic:
     selectedYear = None
@@ -226,7 +233,7 @@ class OverviewLogic:
                 for day_entry in day:
                     if day_entry[1] == code[0]:
                         #day_code_combo = day_code_combo + day_entry[-1]
-                        day_code_combo = day_entry[-1]
+                        day_code_combo = day_entry[0]
                         print("day_code_combo", day_code_combo)
                 if day_code_combo == "" or day_code_combo == "W":
                     day_code_combo += "-"
