@@ -13,7 +13,7 @@ import edit_codes
 import hours_cli
 import overview
 
-CURRENT_VERSION = "v0.1"
+CURRENT_VERSION = "v0.2"
 
 #def main_oud():
 #    parser = argparse.ArgumentParser(description="Log hours for work.")
